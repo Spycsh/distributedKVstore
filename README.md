@@ -3,18 +3,20 @@
 
 ## Overview
 
+Main modules:
+
+- [x] sequence Paxos
+- [x] leader election
+- [x] GET/PUT/CAS kvstore
+- [x] eventually perfect falure detector
+- [x] overlay manager
+- [x] testing
+
 Main structure:
 
 ![structure](Workflow.png)
 
-Main modules:
 
-- [x](sequence Paxos)
-- [x](leader election)
-- [x](GET/PUT/CAS kvstore)
-- [x](eventually perfect falure detector)
-- [x](overlay manager)
-- [x](testing)
 
 ## Getting Started
 
