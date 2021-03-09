@@ -3,7 +3,18 @@
 
 ## Overview
 
+Main structure:
+
 ![structure](Workflow.png)
+
+Main modules:
+
+- [x](sequence Paxos)
+- [x](leader election)
+- [x](GET/PUT/CAS kvstore)
+- [x](eventually perfect falure detector)
+- [x](overlay manager)
+- [x](testing)
 
 ## Getting Started
 
@@ -57,10 +68,10 @@ client/assembly
 
 show the operations in client
 ```
-help
+> help
 ```
 
-notice that only one-character key is permitted!
+notice that currently only **one-character** key is permitted!
 A simple case
 
 ```
@@ -70,7 +81,7 @@ A simple case
 ```
 
 #### Issues
-if "port not bind" please manually run the command to start the cluster or client:
+if there is "port not bind" error, please manually run the command to start the cluster or client:
 
 To run a bootstrap server node execute:
 ```
