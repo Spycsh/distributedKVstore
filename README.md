@@ -3,7 +3,7 @@
 
 ## Overview
 
-![structure](1.png)
+![structure](Workflow.png)
 
 ## Getting Started
 
