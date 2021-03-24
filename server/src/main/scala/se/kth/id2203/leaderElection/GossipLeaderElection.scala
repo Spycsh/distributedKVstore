@@ -74,6 +74,8 @@ class GossipLeaderElection extends ComponentDefinition {
     leader = Some(topProcess);
   }
 
+  // check the leader in ballots with the highest ballot number
+  // if the one is not the leader, then return the new leader to Sequence Paxos
   private def checkLeader() {
 
     var topProcess = self;
@@ -81,7 +83,7 @@ class GossipLeaderElection extends ComponentDefinition {
 
     ballots += (self -> ballot);
     // get top ballot from the ballots
-    // compare by ballot
+    // compare by ballot number
     for (b <- ballots) {
       if (b._2 > topBallot) {
         topBallot = b._2;
@@ -89,6 +91,12 @@ class GossipLeaderElection extends ComponentDefinition {
       }
     }
     var top = (topBallot, topProcess);
+
+    // if the highest Ballot received is larger than maximum of local ballots
+    // self is falling behind, sync its ballot to the highest Ballot + 1
+    // else
+    // if self is the leader, then nothing to do
+    // if not, then make a new leader
     if (topBallot < highestBallot) {
       while (ballot <= highestBallot) {
         ballot = incrementBallotBy(ballot, 1);
@@ -98,7 +106,8 @@ class GossipLeaderElection extends ComponentDefinition {
       if (Some(top) != leader) {
         highestBallot = topBallot;
         makeLeader((topBallot, topProcess));
-        log.info("Ballot leader election end");
+        log.info("BLE: new leader is elected");
+        // return the new leader
         trigger(BLE_Leader(topProcess, topBallot) -> ble);
       }
     }
@@ -106,11 +115,10 @@ class GossipLeaderElection extends ComponentDefinition {
   }
 
   ble uponEvent {
-    //to initialize the topology
+    // 1. initialize the topology
     // after that, every period of time a leader will be elected out
     // then in that round, only the leader will be responsible to propose values and decide
     // without leader election, everyone should propose and it cost a lot msgs
-
     case BLE_Start(pi) => {
       topology = pi;
       majority = (topology.size / 2) + 1;
@@ -122,12 +130,14 @@ class GossipLeaderElection extends ComponentDefinition {
 
   timer uponEvent {
     case CheckTimeout(_) => {
-
+      // 2. after timeout, one process will check the leader
+      // update the highest Ballot
       if (ballots.size + 1 >= majority) {
         checkLeader();
       }
       ballots.clear;
       round = round + 1;
+
       for (p <- topology) {
         if (p != self) {
           trigger(NetMessage(self, p, HeartbeatReq(round, highestBallot)) -> pl);
@@ -139,17 +149,21 @@ class GossipLeaderElection extends ComponentDefinition {
 
   pl uponEvent {
     case NetMessage(header, HeartbeatReq(r, hb)) => {
-
+      // 4. self receives a heartbeat request
+      // if the ballot number is bigger than the local highest Ballot
+      // update the highest Ballot
       if (hb > highestBallot) {
         highestBallot = hb;
       }
       trigger(NetMessage(self, header.src, HeartbeatResp(r, ballot)) -> pl);
     }
     case NetMessage(header, HeartbeatResp(r, b)) => {
-
+      // self gets the heartbeat response
+      // store in ballots, including the sender and the ballot number
       if (r == round) {
         ballots += (header.src -> b);
       } else {
+        // if gets earlier response, then it should have a longer timeout
         period = period + delta;
       }
     }

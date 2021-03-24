@@ -124,17 +124,14 @@ class SequencePaxos extends ComponentDefinition {
 
         acks += (a -> (na, sfxa));
         lds += (a -> lda);
-        //var P = new HashMap();
-        // for(p <- pi){
-        //     if(!acks(p).isEmpty)P += (p, acks(p));
-        // }
+
         if (acks.keySet.size == majority) {
           //max acks[p]
           var k = 0l;
           var sfx = List.empty[Operation];
           for (ack <- acks) {
-            //round number is bigger
-            //or round number is the same, the seq size is bigger
+            // round number is bigger
+            // or round number is the same, the seq size is bigger
             if ((ack._2._1 > k) || ((ack._2._1 == k) && (ack._2._2.size > sfx.size))) {
               sfx = ack._2._2;
               k = ack._2._1;
@@ -183,7 +180,7 @@ class SequencePaxos extends ComponentDefinition {
       if ((nProm == nL) && (state == (FOLLOWER, ACCEPT))) {
 
         va = va ::: List(c);
-        // println("[SC] accepting");
+        // println("accepting");
         trigger(NetMessage(self, p, Accepted(nL, va.size)) -> pl);
       }
     }
@@ -212,7 +209,6 @@ class SequencePaxos extends ComponentDefinition {
           if (las.contains(p)) {
             if (las(p) >= m) {
               counter += 1;
-              //pTemp ::: List(p);
             }
           }
         }
@@ -250,18 +246,15 @@ class SequencePaxos extends ComponentDefinition {
         }
       }
       else {
-        //!!!attention here: here is different from the lab assignment
-        //if I am not the leader, but I have a new operation from the client
-        //I have to pass the the operation to the leader(proposer)
+        //here is different from the lab
+        // pass the operation to the leader if self is not leader
         if (leader.isDefined) { //there exists a leader
-          // println("I am not the leader, forward to leader");
           trigger(NetMessage(self, leader.get, c) -> pl); //forward the propose operation to the leader
         } else {
           // println("No leader yet");
         }
       }
     }
-
 
     //to set the topology initially in the overlay manager
     case SC_InitializeTopology(topology) => {

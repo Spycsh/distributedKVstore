@@ -68,19 +68,19 @@ class KVService extends ComponentDefinition {
   //    }
   //  }
 
-  //receive the operation
+  // receive the operation
   net uponEvent {
     case NetMessage(header, operation: Operation) => {
       log.info(" Receive operation: {}", operation);
       pendingList += (operation.id -> header.src); //add to pending list
-      //propose to the sequence consensus component
+      // propose to the sequence consensus component
       // wait until SC_Decide, then send the result
       trigger(SC_Propose(operation) -> sc);
     }
   }
 
   sc uponEvent {
-    //sequence consensus decide
+    // sequence consensus decide
     case SC_Decide(operation: Operation) => {
       log.info("Decide operation: {}", operation);
       var opSrc = self;
@@ -90,7 +90,7 @@ class KVService extends ComponentDefinition {
 
       operation match {
         case Get(key, id) => {
-          //get operation
+          // get operation
           if (store.contains(key)) { //the key exists
             val getValue = store.get(key);
             log.info("GET operation: " + key + " - " + getValue);
@@ -103,7 +103,7 @@ class KVService extends ComponentDefinition {
             trigger(NetMessage(self, opSrc, GetResponse(id, OpCode.NotFound, "null")) -> net);
           }
         }
-        //put operation
+        // put operation
         case Put(key, value, id) => {
           log.info("PUT operation: " + key + " - " + value);
           store += (key -> value.toString); //update data
@@ -112,20 +112,20 @@ class KVService extends ComponentDefinition {
           pendingList.remove(id);
         }
 
-        //cas operation
+        // cas operation
         case Cas(key, refValue, value, id) => {
-          if (store.contains(key)) { //if the key exists
-            if (store.get(key).get != refValue) { //not match the ref Value
+          if (store.contains(key)) { // if the key exists
+            if (store.get(key).get != refValue) { // not match the ref Value
               println("CAS operation error: " + key + " - " + refValue + " not match");
               trigger(NetMessage(self, opSrc, CasResponse(id, OpCode.NotFound, refValue, refValue)) -> net);
 
-            } else { //success
+            } else { // match success
               println("CAS operation: " + key + " - " + value);
               store += (key -> value);
               trigger(NetMessage(self, opSrc, CasResponse(id, OpCode.Ok, refValue, value)) -> net);
               pendingList.remove(id);
             }
-          } else { //key not exist
+          } else { // key does not exist
             println("CAS operation error: " + key + " not found");
             trigger(NetMessage(self, opSrc, CasResponse(id, OpCode.NotFound, refValue, refValue)) -> net);
           }
