@@ -14,7 +14,7 @@ Main modules:
 
 Main structure:
 
-![structure](Workflow.png)
+![structure](workflow.png)
 
 
 
