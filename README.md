@@ -87,22 +87,22 @@ if there is "port not bind" error, please manually run the command to start the 
 
 To run a bootstrap server node execute:
 ```
-java -jar server/target/scala-2.12/server.jar -p 45678
+java -jar server/target/scala-2.13/server.jar -p 45678
 ```
 This will start the bootstrap server on localhost:45678.
 
 After you started a bootstrap server on <bsip>:<bsport>, again from the server directory execute:
   
 ```
-java -jar server/target/scala-2.12/server.jar -p 45679 -s <bsip>:<bsport>
+java -jar server/target/scala-2.13/server.jar -p 45679 -s <bsip>:<bsport>
 # for example
-# java -jar server/target/scala-2.12/server.jar -p 45679 -s localhost:45678
+# java -jar server/target/scala-2.13/server.jar -p 45679 -s localhost:45678
 ```
 
 and start the client:
 
 ```
-java -jar client/target/scala-2.12/client.jar -p 56787 -b <bsip>:<bsport>
+java -jar client/target/scala-2.13/client.jar -p 56787 -b <bsip>:<bsport>
 ```
 
 ## Contact
