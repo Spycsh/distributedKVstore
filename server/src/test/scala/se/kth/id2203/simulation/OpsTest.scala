@@ -40,36 +40,7 @@ class OpsTest extends FlatSpec with Matchers {
 
   private val nMessages = 10;
 
-  //  "Classloader" should "be something" in {
-  //    val cname = classOf[SimulationResultSingleton].getCanonicalName();
-  //    var cl = classOf[SimulationResultSingleton].getClassLoader;
-  //    var i = 0;
-  //    while (cl != null) {
-  //      val res = try {
-  //        val c = cl.loadClass(cname);
-  //        true
-  //      } catch {
-  //        case t: Throwable => false
-  //      }
-  //      println(s"$i -> ${cl.getClass.getName} has class? $res");
-  //      cl = cl.getParent();
-  //      i -= 1;
-  //    }
-  //  }
-
-//  "Simple Operations" should "not be implemented" in { // well of course eventually they should be implemented^^
-//    val seed = 123l;
-//    JSimulationScenario.setSeed(seed);
-//    val simpleBootScenario = SimpleScenario.scenario(3);
-//    val res = SimulationResultSingleton.getInstance();
-//    SimulationResult += ("messages" -> nMessages);
-//    simpleBootScenario.simulate(classOf[LauncherComp]);
-//    for (i <- 0 to nMessages) {
-//      //SimulationResult.get[String](s"test$i") should be (Some("NotImplemented"));
-//      SimulationResult.get[String](s"test$i") should be (Some("Sent"));
-//      // of course the correct response should be Success not NotImplemented, but like this the test passes
-//    }
-//  }
+  // GET the values that already initialized in the KV
   "get" should "return initialized value" in {
     val seed = 123l;
     JSimulationScenario.setSeed(seed);
@@ -86,6 +57,7 @@ class OpsTest extends FlatSpec with Matchers {
     }
   }
 
+  // PUT the key-value pairs in the KV store which have a match of keys
   "put" should "return the put values" in {
     val seed = 123l;
     JSimulationScenario.setSeed(seed);
@@ -100,8 +72,8 @@ class OpsTest extends FlatSpec with Matchers {
     }
   }
 
-
-  "cas" should "return the new value if match" in {
+  // Compare and Swap key-value pairs in the KV store which have a match of keys
+  "cas" should "return the new value if key exists and old value matches" in {
     val seed = 123l;
     JSimulationScenario.setSeed(seed);
     val simpleBootScenario = SimpleScenario.scenario(3);
@@ -114,32 +86,36 @@ class OpsTest extends FlatSpec with Matchers {
       SimulationResult.get[String](s"test$i") should be (Some(s"CshNew$i"));
     }
   }
-//  "Operations" should "be implemented" in {
-//    val seed = 123l;
-//    JSimulationScenario.setSeed(seed);
-//
-//    //val simpleBootScenario = SimpleScenario.scenario(3);
-//    val simpleBootScenario = SimpleScenario.scenario(4);
-//    val res = SimulationResultSingleton.getInstance();
-//    SimulationResult += ("messages" -> nMessages);
-//
-//
-//    simpleBootScenario.simulate(classOf[LauncherComp]);
-//
-//
-//
-//    for (i <- nMessages/2 + 1 to nMessages) {//the later 5 key-value pairs are not being cas
-//      //PUT
-//      SimulationResult.get[String](s"test$i") should be (Some(s"Csh$i"));
-//      //GET
-//      SimulationResult.get[String](s"test$i") should be (Some(s"Csh$i"));
-//    }
 
-//    for (i <- 0 to nMessages/2) {
-//      //CAS
-//      SimulationResult.get[String](s"test$i") should be (Some(s"newValue$i"));
-//    }
+  // compare and swap key-value pairs in the KV store which do not have a match
+  "cas2" should "return keyNotFound if key does not exist" in {
+    val seed = 123l;
+    JSimulationScenario.setSeed(seed);
+    val simpleBootScenario = SimpleScenario.scenario(3);
+    val res = SimulationResultSingleton.getInstance();
+    SimulationResult += ("messages" -> nMessages);
+    SimulationResult += ("operation" -> "CAS");
+    SimulationResult += ("initialization" -> false);  // not initialize, so CAS will not match
+    simpleBootScenario.simulate(classOf[LauncherComp]);
+    for (i <- 0 to nMessages) {
+      SimulationResult.get[String](s"test$i") should be (Some(s"keyNotFound"));
+    }
+  }
 
+  // compare and swap key-value pairs in the KV store which do not have a match
+  "cas3" should "return the old value if old value does not match" in {
+    val seed = 123l;
+    JSimulationScenario.setSeed(seed);
+    val simpleBootScenario = SimpleScenario.scenario(3);
+    val res = SimulationResultSingleton.getInstance();
+    SimulationResult += ("messages" -> nMessages);
+    SimulationResult += ("operation" -> "CAS3");
+    SimulationResult += ("initialization" -> true);
+    simpleBootScenario.simulate(classOf[LauncherComp]);
+    for (i <- 0 to nMessages) {
+      SimulationResult.get[String](s"test$i") should be (Some(s"Csh$i")); // return old value if not match
+    }
+  }
 
 }
 

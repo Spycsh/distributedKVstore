@@ -115,9 +115,9 @@ class KVService extends ComponentDefinition {
         // cas operation
         case Cas(key, refValue, value, id) => {
           if (store.contains(key)) { // if the key exists
-            if (store.get(key).get != refValue) { // not match the ref Value
+            if (store.get(key).get != refValue) { // not match the old Value
               println("CAS operation error: " + key + " - " + refValue + " not match");
-              trigger(NetMessage(self, opSrc, CasResponse(id, OpCode.NotFound, refValue, refValue)) -> net);
+              trigger(NetMessage(self, opSrc, CasResponse(id, OpCode.NotFound, refValue, store.get(key).get)) -> net);
 
             } else { // match success
               println("CAS operation: " + key + " - " + value);
@@ -127,7 +127,7 @@ class KVService extends ComponentDefinition {
             }
           } else { // key does not exist
             println("CAS operation error: " + key + " not found");
-            trigger(NetMessage(self, opSrc, CasResponse(id, OpCode.NotFound, refValue, refValue)) -> net);
+            trigger(NetMessage(self, opSrc, CasResponse(id, OpCode.NotFound, "keyNotFound", "keyNotFound")) -> net);
           }
         }
       }

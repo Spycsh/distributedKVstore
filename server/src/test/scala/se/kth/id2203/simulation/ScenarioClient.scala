@@ -94,6 +94,15 @@ class ScenarioClient extends ComponentDefinition {
 //            trigger(NetMessage(self, server, routeMsg) -> net);
 //            sendOp(cas);
           }
+
+          case "CAS3" => {
+            // this Cas operation should not swap the old value with the new value because if
+            // the old value does not match
+            // and the return value should be the old value
+            operationList ++= List(new Cas(s"test$i", s"CshNotMatch$i", s"CshNew$i"));
+          }
+
+
         }
 
       }
@@ -151,6 +160,7 @@ class ScenarioClient extends ComponentDefinition {
 
     case NetMessage(header, or @ CasResponse(id, status, oldValue, newValue)) => {
       logger.debug(s"cas operation response: $or");
+
       pending.remove(id) match {
         case Some(key) => SimulationResult += (key -> newValue);//new value here in the result
         case None      => logger.warn("ID $id was not pending! Ignoring response.");
